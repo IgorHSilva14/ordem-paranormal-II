@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ordem Paranormal RPG</title>
+  <link rel="icon" href="assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Ícones reutilizáveis -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+      <symbol id="d-d20" viewBox="0 0 100 100"><polygon points="50,4 92,28 92,72 50,96 8,72 8,28"/><polygon points="50,22 78,68 22,68"/><path d="M50 4v18M92 28L50 22M8 28l42-6M92 72L78 68M50 96L78 68M50 96L22 68M8 72l14-4M92 28l-14 40M8 28l14 40"/></symbol>
+      <symbol id="d-d6" viewBox="0 0 100 100"><polygon points="50,6 90,28 90,72 50,94 10,72 10,28"/><path d="M10 28l40 22 40-22M50 50v44"/><circle cx="50" cy="28" r="3"/><circle cx="32" cy="64" r="3"/><circle cx="68" cy="64" r="3"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- Camada 1: imagem de fundo (some ao rolar) -->
+  <section class="hero" id="hero" aria-label="Início">
+    <div class="hero__bg"></div>
+    <button class="hero__arrow" id="scrollBtn" aria-label="Rolar para entrar ou criar conta"></button>
+  </section>
+
+  <!-- Camada 2: login / cadastro (aparece ao rolar) -->
+  <section class="auth" id="auth" aria-label="Acesso">
+    <div class="fog" id="fog" aria-hidden="true"></div>
+
+    <div class="shell" id="shell" data-tab="login">
+
+      <!-- Painel decorativo -->
+      <aside class="aside">
+        <img class="aside__logo" src="assets/img/logo.png" alt="" aria-hidden="true">
+        <svg class="die die--a" aria-hidden="true"><use href="#d-d20"/></svg>
+        <svg class="die die--b" aria-hidden="true"><use href="#d-d6"/></svg>
+        <svg class="die die--c" aria-hidden="true"><use href="#d-d20"/></svg>
+        <div class="aside__text">
+          <h2>Seu arquivo de agente</h2>
+          <p>Fichas, campanhas e rituais guardados em um só lugar, prontos para a próxima sessão.</p>
+          <ul>
+            <li>Fichas sempre salvas</li>
+            <li>Campanhas com a sua mesa</li>
+            <li>Itens e rituais à mão</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Formulários -->
+      <div class="panel">
+        <div class="tabs" role="tablist">
+          <span class="tabs__thumb" aria-hidden="true"></span>
+          <button class="tab is-active" role="tab" id="tab-login" aria-selected="true" aria-controls="form-login">Entrar</button>
+          <button class="tab" role="tab" id="tab-signup" aria-selected="false" aria-controls="form-signup">Criar conta</button>
+        </div>
+
+        <form class="form is-active" id="form-login" role="tabpanel" aria-labelledby="tab-login">
+          <header>
+            <h2>Bem-vindo de volta</h2>
+            <p>Entre para continuar de onde parou.</p>
+          </header>
+
+          <label class="field">
+            <span>E-mail</span>
+            <div class="control">
+              <svg class="ico"><use href="#i-mail"/></svg>
+              <input type="email" name="email" placeholder="voce@email.com" autocomplete="email" required>
+            </div>
+          </label>
+
+          <label class="field">
+            <span>Senha</span>
+            <div class="control">
+              <svg class="ico"><use href="#i-lock"/></svg>
+              <input type="password" name="password" placeholder="Sua senha" autocomplete="current-password" required>
+              <button type="button" class="toggle" aria-label="Mostrar senha"><svg class="ico"><use href="#i-eye"/></svg></button>
+            </div>
+          </label>
+
+          <div class="row">
+            <label class="check"><input type="checkbox" name="remember"> Manter conectado</label>
+            <a href="#" class="link">Esqueci a senha</a>
+          </div>
+
+          <button class="btn" type="submit">Entrar</button>
+          <p class="swap">Ainda não tem conta? <button type="button" class="link" data-go="signup">Criar conta</button></p>
+        </form>
+
+        <form class="form" id="form-signup" role="tabpanel" aria-labelledby="tab-signup" hidden>
+          <header>
+            <h2>Crie seu acesso</h2>
+            <p>Leva menos de um minuto.</p>
+          </header>
+
+          <label class="field">
+            <span>Nome de agente</span>
+            <div class="control">
+              <svg class="ico"><use href="#i-user"/></svg>
+              <input type="text" name="name" placeholder="Como quer ser chamado" autocomplete="nickname" required>
+            </div>
+          </label>
+
+          <label class="field">
+            <span>E-mail</span>
+            <div class="control">
+              <svg class="ico"><use href="#i-mail"/></svg>
+              <input type="email" name="email" placeholder="voce@email.com" autocomplete="email" required>
+            </div>
+          </label>
+
+          <div class="two">
+            <label class="field">
+              <span>Senha</span>
+              <div class="control">
+                <svg class="ico"><use href="#i-lock"/></svg>
+                <input type="password" name="password" id="pw" placeholder="Mín. 6 caracteres" autocomplete="new-password" minlength="6" required>
+                <button type="button" class="toggle" aria-label="Mostrar senha"><svg class="ico"><use href="#i-eye"/></svg></button>
+              </div>
+            </label>
+            <label class="field">
+              <span>Confirmar senha</span>
+              <div class="control">
+                <svg class="ico"><use href="#i-lock"/></svg>
+                <input type="password" name="confirm" placeholder="Repita a senha" autocomplete="new-password" minlength="6" required>
+              </div>
+            </label>
+          </div>
+
+          <div class="meter" id="meter" aria-live="polite">
+            <div class="meter__bars"><i></i><i></i><i></i><i></i></div>
+            <small id="meterText">Digite uma senha</small>
+          </div>
+
+          <label class="check"><input type="checkbox" name="terms" required> Li e aceito os termos de uso</label>
+
+          <button class="btn" type="submit">Criar conta</button>
+          <p class="swap">Já tem conta? <button type="button" class="link" data-go="login">Entrar</button></p>
+        </form>
+
+        <p class="msg" id="msg" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="spacer" aria-hidden="true"></div>
+  <script src="js/script.js"></script>
+</body>
+</html>
