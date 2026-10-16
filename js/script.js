@@ -1,27 +1,38 @@
-const hero  = document.getElementById('hero');
-const auth  = document.getElementById('auth');
-const shell = document.getElementById('shell');
-const msg   = document.getElementById('msg');
+const hero     = document.getElementById('hero');
+const profiles = document.getElementById('profiles');
+const auth     = document.getElementById('auth');
+const shell    = document.getElementById('shell');
+const msg      = document.getElementById('msg');
+const dots     = [...document.querySelectorAll('#dots button')];
 
 const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ---------- Fade entre a imagem e o login ---------- */
+/* ---------- Camadas: hero -> perfis -> login ---------- */
+function setLayer(el, opacity) {
+  el.style.opacity = opacity;
+  el.style.visibility = opacity <= 0 ? 'hidden' : 'visible';
+  el.style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
+  el.style.zIndex = opacity > 0.5 ? 3 : 1;
+}
+
 let ticking = false;
 
 function update() {
-  const p = clamp(window.scrollY / window.innerHeight);   // 0 (topo) → 1
-  const heroOpacity = 1 - clamp(p / 0.7);                  // imagem some
-  const authOpacity = clamp((p - 0.3) / 0.7);              // login aparece (com sobreposição)
+  const p = window.scrollY / window.innerHeight;           // 0 (topo) -> 2 (fim)
 
-  hero.style.setProperty('--p', p);
-  hero.style.opacity = heroOpacity;
-  hero.style.visibility = heroOpacity <= 0 ? 'hidden' : 'visible';
-  hero.style.pointerEvents = heroOpacity < 0.5 ? 'none' : 'auto';
+  const heroO     = 1 - clamp(p / 0.7);
+  const profilesO = Math.min(clamp((p - 0.3) / 0.7), 1 - clamp((p - 1) / 0.7));
+  const authO     = clamp((p - 1.3) / 0.7);
 
-  auth.style.opacity = authOpacity;
-  auth.style.visibility = authOpacity <= 0 ? 'hidden' : 'visible';
-  auth.style.pointerEvents = authOpacity > 0.5 ? 'auto' : 'none';
-  auth.style.zIndex = authOpacity > 0.5 ? 3 : 1;
+  hero.style.setProperty('--p', clamp(p));
+  setLayer(hero, heroO);
+  setLayer(profiles, profilesO);
+  setLayer(auth, authO);
+  profiles.classList.toggle('in-view', profilesO > 0.35);
+
+  const active = Math.round(clamp(p, 0, 2));
+  dots.forEach((d, i) => d.classList.toggle('is-on', i === active));
   ticking = false;
 }
 
@@ -31,9 +42,67 @@ window.addEventListener('scroll', () => {
 window.addEventListener('resize', update);
 update();
 
-document.getElementById('scrollBtn').addEventListener('click', () => {
-  window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+/* setas e bolinhas: rolam até a camada indicada */
+document.querySelectorAll('[data-to]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: window.innerHeight * Number(btn.dataset.to), behavior: 'smooth' });
+  });
 });
+
+/* ---------- Parallax do mouse na primeira camada ---------- */
+if (!reduceMotion) {
+  window.addEventListener('pointermove', (e) => {
+    hero.style.setProperty('--mx', (e.clientX / window.innerWidth - 0.5).toFixed(3));
+    hero.style.setProperty('--my', (e.clientY / window.innerHeight - 0.5).toFixed(3));
+  }, { passive: true });
+}
+
+/* ---------- Poeira / fagulhas flutuantes (canvas) ---------- */
+(function dust() {
+  const canvas = document.getElementById('dust');
+  if (reduceMotion || !canvas) return;
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr, particles = [];
+
+  const spawn = (initial) => ({
+    x: Math.random() * w,
+    y: initial ? Math.random() * h : h + 10,
+    r: 0.6 + Math.random() * 1.8,
+    vy: 0.15 + Math.random() * 0.45,
+    vx: (Math.random() - 0.5) * 0.25,
+    t: Math.random() * Math.PI * 2,
+    s: 0.01 + Math.random() * 0.02
+  });
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(clamp(w * h / 16000, 30, 110));
+    particles = Array.from({ length: n }, () => spawn(true));
+  }
+
+  function frame() {
+    if (hero.style.visibility !== 'hidden') {
+      ctx.clearRect(0, 0, w, h);
+      for (const q of particles) {
+        q.t += q.s; q.x += q.vx + Math.sin(q.t) * 0.3; q.y -= q.vy;
+        if (q.y < -10) Object.assign(q, spawn(false));
+        const a = 0.25 + Math.abs(Math.sin(q.t * 1.6)) * 0.6;
+        const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.r * 4);
+        g.addColorStop(0, `rgba(170, 215, 255, ${a})`);
+        g.addColorStop(1, 'rgba(106, 166, 224, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(q.x, q.y, q.r * 4, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  frame();
+})();
 
 /* ---------- Fragmentos flutuantes ---------- */
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {

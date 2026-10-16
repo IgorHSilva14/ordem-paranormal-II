@@ -20,6 +20,9 @@
       <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
       <symbol id="d-d20" viewBox="0 0 100 100"><polygon points="50,4 92,28 92,72 50,96 8,72 8,28"/><polygon points="50,22 78,68 22,68"/><path d="M50 4v18M92 28L50 22M8 28l42-6M92 72L78 68M50 96L78 68M50 96L22 68M8 72l14-4M92 28l-14 40M8 28l14 40"/></symbol>
       <symbol id="d-d6" viewBox="0 0 100 100"><polygon points="50,6 90,28 90,72 50,94 10,72 10,28"/><path d="M10 28l40 22 40-22M50 50v44"/><circle cx="50" cy="28" r="3"/><circle cx="32" cy="64" r="3"/><circle cx="68" cy="64" r="3"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.500 8-8 9-4.500-1-8-4-8-9V6z"/><circle cx="12" cy="11" r="2.500"/></symbol>
       <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
     </defs>
   </svg>
@@ -27,10 +30,68 @@
   <!-- Camada 1: imagem de fundo (some ao rolar) -->
   <section class="hero" id="hero" aria-label="Início">
     <div class="hero__bg"></div>
-    <button class="hero__arrow" id="scrollBtn" aria-label="Rolar para entrar ou criar conta"></button>
+    <div class="hero__glow"></div>
+    <div class="hero__sweep"></div>
+    <canvas class="hero__dust" id="dust" aria-hidden="true"></canvas>
+    <div class="hero__grain"></div>
+    <button class="cue" data-to="1" aria-label="Rolar para ver os perfis">
+      <span class="cue__label">Role para começar</span>
+      <i class="cue__chev"></i><i class="cue__chev"></i><i class="cue__chev"></i>
+    </button>
   </section>
 
-  <!-- Camada 2: login / cadastro (aparece ao rolar) -->
+  <!-- Camada 2: perfis -->
+  <section class="profiles" id="profiles" aria-label="Perfis de Ordem Paranormal II">
+    <div class="profiles__inner">
+      <header class="profiles__head">
+        <small>Ordem Paranormal II</small>
+        <h2>Os 3 Perfis</h2>
+        <p>Três jeitos de enfrentar o paranormal.</p>
+      </header>
+
+      <div class="cards">
+        <article class="card">
+          <svg class="card__ico"><use href="#i-bolt"/></svg>
+          <h3>Executor</h3>
+          <dl>
+            <dt>Estilo</dt>
+            <dd>Proativo, direto e focado em agir primeiro.</dd>
+            <dt>Mecânica</dt>
+            <dd>É recompensado por tentar fazer as coisas. Quando falha em uma ação, ele ganha <strong>ímpeto</strong> (um recurso para melhorar testes ou atributos) para tentar novamente.</dd>
+          </dl>
+        </article>
+
+        <article class="card">
+          <svg class="card__ico"><use href="#i-search"/></svg>
+          <h3>Analista</h3>
+          <dl>
+            <dt>Estilo</dt>
+            <dd>Metódico, observador e cauteloso.</dd>
+            <dt>Mecânica</dt>
+            <dd>Dedica tempo para analisar a situação e se preparar antes de agir, executando suas tarefas com mais precisão por estar planejado.</dd>
+          </dl>
+        </article>
+
+        <article class="card">
+          <svg class="card__ico"><use href="#i-shield"/></svg>
+          <h3>Vigilante</h3>
+          <dl>
+            <dt>Estilo</dt>
+            <dd>Reativo e alerta ao ambiente.</dd>
+            <dt>Mecânica</dt>
+            <dd>Fica de olho em oportunidades para responder rápido às ameaças, conseguindo agir antes dos outros ou realizar mais de uma ação na rodada.</dd>
+          </dl>
+        </article>
+      </div>
+
+      <button class="cue cue--inline" data-to="2" aria-label="Rolar para entrar ou criar conta">
+        <span class="cue__label">Entrar ou criar conta</span>
+        <i class="cue__chev"></i><i class="cue__chev"></i><i class="cue__chev"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Camada 3: login / cadastro (aparece ao rolar) -->
   <section class="auth" id="auth" aria-label="Acesso">
     <div class="fog" id="fog" aria-hidden="true"></div>
 
@@ -148,6 +209,12 @@
       </div>
     </div>
   </section>
+
+  <nav class="dots" id="dots" aria-label="Seções">
+    <button data-to="0" aria-label="Início"></button>
+    <button data-to="1" aria-label="Perfis"></button>
+    <button data-to="2" aria-label="Acesso"></button>
+  </nav>
 
   <div class="spacer" aria-hidden="true"></div>
   <script src="js/script.js"></script>
