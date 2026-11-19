@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Mestre</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+/* Visual moderno: superfícies escuras neutras, cantos suaves, tipografia limpa, acento por tema */
+:root{--bg:#080808;--s1:#111;--s2:#181818;--s3:#222;--line:#2b2b2b;--tx:#ededed;--mut:#9b9b9b;--r:14px;
+--f-disp:'Special Elite',monospace;--f-body:'Special Elite',monospace}
+body{--accent:#ef4452;--acc-t:#ff7a85;--glow:rgba(239,68,82,.16);--current-accent:var(--accent)}
+body.theme-blue{--accent:#3b82f6;--acc-t:#7fb0ff;--glow:rgba(59,130,246,.16)}
+body.theme-green{--accent:#22c55e;--acc-t:#6ee79a;--glow:rgba(34,197,94,.14)}
+body.min-h-screen{font-family:var(--f-body);font-size:14px;line-height:1.5;color:var(--tx);
+background:radial-gradient(900px 420px at 50% -120px,var(--glow),transparent 70%),var(--bg)}
+.pagina{max-width:1320px;margin:0 auto}
+.kicker{display:inline-block;background:var(--glow);color:var(--acc-t);border:1px solid var(--accent);font:600 11px var(--f-body);letter-spacing:.14em;padding:3px 10px;border-radius:99px;text-transform:uppercase}
+body h1{font-family:var(--f-disp)!important;font-weight:700!important;letter-spacing:0!important;color:var(--tx)!important;line-height:1.05;font-size:clamp(1.9rem,4.5vw,2.8rem)!important;text-transform:none!important}
+body header{border-color:var(--line)!important;padding-bottom:18px!important}
+.title-font,.tf{font-family:var(--f-disp)!important;font-weight:600;letter-spacing:0}
+body h2.title-font,body h4.tf,body h2.tf{font-size:1.1rem;font-weight:600;color:var(--tx);border:0!important;padding:0 0 10px;margin-bottom:12px!important;display:flex;align-items:center;gap:8px}
+body h2.title-font::before,body h4.tf::before,body h2.tf::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--accent)}
+body h2.tf{font-size:1.35rem}
+body h3.tf{font-weight:700}
+body .rounded,body .rounded-md,body .rounded-lg{border-radius:10px}
+body [class*="bg-[#1a1a1a]"],body .bg-panel,body .panel{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px rgba(0,0,0,.25)}
+body [class*="bg-[#111]"],body [class*="bg-[#161616]"]{background:var(--s2)}
+body [class*="bg-[#222]"]{background:var(--s3)}
+body [class*="border-l-4"]{border-left-width:3px;border-radius:var(--r)}
+body .text-gray-300,body .text-gray-400,body .text-gray-500{color:var(--mut)}
+body .text-gray-600{color:#707070}
+body [class*="border-gray"]{border-color:var(--line)}
+body label.title-font,body label.tf{color:var(--mut);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.input-gritty,.inp{background:var(--s2);border:1px solid var(--line);border-radius:8px;color:var(--tx);font-family:var(--f-body);font-weight:500;padding:5px 8px;transition:border-color .15s,box-shadow .15s}
+.input-gritty:focus,.inp:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+select.input-gritty{background:var(--s2)!important}
+.area-gritty{background:var(--s2);border:1px solid var(--line);border-radius:8px;color:var(--tx);padding:6px 8px;resize:vertical;font-family:var(--f-body)}
+.area-gritty:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.btn-action,.btn{background:var(--s2);border:1px solid var(--line);color:var(--tx);cursor:pointer;transition:background .15s,border-color .15s,transform .1s;font-family:var(--f-body);font-weight:600;font-size:12.5px;text-transform:none;letter-spacing:0;border-radius:10px}
+.btn-action:hover,.btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-action:active,.btn:active{transform:scale(.97)}
+.btn-action:focus-visible,.btn:focus-visible,.btn-dice:focus-visible{outline:2px solid var(--acc-t);outline-offset:2px}
+.btn-dice{background:var(--s3);border:1px solid var(--line);color:var(--acc-t);font-family:var(--f-disp);font-weight:600;padding:3px 10px;font-size:.9rem;cursor:pointer;border-radius:8px;min-width:54px;text-align:center;transition:background .15s}
+.btn-dice:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tag-for,.tag-int,.tag-pre,.tag-agi{border-radius:99px;font-weight:600;color:#fff}
+.tag-for{background:#e0475a}.tag-int{background:#7c5cf0}.tag-pre{background:#d9902a}.tag-agi{background:#2fa66a}
+#skills-container{gap:2px!important}
+#skills-container>div{padding:5px 8px;margin:0;border-radius:10px;transition:background .12s}
+#skills-container>div:hover{background:var(--s3)}
+#skills-container .input-gritty{width:4rem;text-align:center;font-size:12px}
+#nota-info{background:var(--s1)}
+#roll-modal{backdrop-filter:blur(6px)}
+#roll-modal-content,#modal .panel{background:var(--s1)!important;border:1px solid var(--line)!important;border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px var(--glow)!important}
+#roll-modal-content #modal-title{font-family:var(--f-disp);font-weight:600;color:var(--tx);border-color:var(--line)}
+#roll-modal-content .text-6xl{font-family:var(--f-disp);font-weight:700;color:var(--tx);filter:none;text-shadow:0 0 40px var(--accent)}
+@keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+@keyframes flash{0%{background:var(--glow)}100%{background:var(--bg)}}
+@keyframes critFlash{0%{color:var(--accent);filter:none;transform:scale(1)}15%{color:#fff;filter:drop-shadow(0 0 14px var(--accent)) drop-shadow(0 0 5px #fff);transform:scale(1.25)}100%{color:var(--accent);filter:none;transform:scale(1)}}
+.roll-pop{animation:flash .8s ease-out}.roll-pop .roll-num{display:inline-block;animation:pop .45s ease-out}
+.roll-pop .crit-num{animation:critFlash 1.1s ease-out}
+.roll-num{font-family:var(--f-disp)!important;font-weight:700!important}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:8px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+#theme-picker{width:30px;height:30px;padding:0;border:2px solid var(--line);border-radius:50%;background:none;cursor:pointer}
+#theme-picker::-webkit-color-swatch-wrapper{padding:0}#theme-picker::-webkit-color-swatch{border:0;border-radius:50%}#theme-picker::-moz-color-swatch{border:0;border-radius:50%}
+#skills-container{display:grid!important;grid-template-columns:1fr 1fr;gap:2px 18px!important}
+#skills-container>div{min-width:0}
+#skills-container .flex-grow{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#skills-container .input-gritty{width:3.2rem!important;padding:4px 2px}
+#skills-container .btn-dice{min-width:46px;padding:3px 6px}
+@media(max-width:767px){#skills-container{grid-template-columns:1fr}}
+.fas,.fa-solid{display:inline-block;width:1em;height:1em;vertical-align:-.14em;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat;font-size:inherit}
+.fa-dice-d20{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%202l9%205.2v9.6L12%2022l-9-5.2V7.2zM12%207l5%208.5H7zM12%202v5M21%207.2L17%2015.5M3%207.2L7%2015.5M7%2015.5L12%2022l5-6.5'/%3E%3C/svg%3E")}
+.fa-chevron-right{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9%206l6%206-6%206'/%3E%3C/svg%3E")}
+.fa-chevron-down{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M6%209l6%206%206-6'/%3E%3C/svg%3E")}
+.fa-trash{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M4%207h16M10%2011v6M14%2011v6M6%207l1%2013h10l1-13M9%207V4h6v3'/%3E%3C/svg%3E")}
+.fa-plus{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%205v14M5%2012h14'/%3E%3C/svg%3E")}
+.fa-times{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M6%206l12%2012M18%206L6%2018'/%3E%3C/svg%3E")}
+.fa-floppy-disk{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M5%203h11l3%203v15H5zM8%203v6h8M8%2021v-7h8v7'/%3E%3C/svg%3E")}
+.fa-right-to-bracket{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M14%204h5v16h-5M3%2012h11M10%208l4%204-4%204'/%3E%3C/svg%3E")}
+.fa-eye{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M2%2012s4-7%2010-7%2010%207%2010%207-4%207-10%207S2%2012%202%2012zM12%209a3%203%200%20100%206%203%203%200%20000-6z'/%3E%3C/svg%3E")}
+.fa-scroll{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M6%204h12v13a3%203%200%20003%203H9a3%203%200%2001-3-3zM6%204a2%202%200%2000-2%202v1h2M10%209h5M10%2013h5'/%3E%3C/svg%3E")}
+.fa-rotate{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M20%2012a8%208%200%2011-2.5-5.8M20%204v5h-5'/%3E%3C/svg%3E")}
+.fa-user-plus{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9%2011a4%204%200%20100-8%204%204%200%20000%208zM2%2021c0-4%203-6%207-6s7%202%207%206M19%208v6M16%2011h6'/%3E%3C/svg%3E")}
+.fa-user-minus{--ic:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9%2011a4%204%200%20100-8%204%204%200%20000%208zM2%2021c0-4%203-6%207-6s7%202%207%206M16%2011h6'/%3E%3C/svg%3E")}
+
+body [class*="bg-[#1a1a1a]"],body [class*="bg-[#111]"],body [class*="bg-[#161616]"],body [class*="bg-[#222]"],body .bg-panel,body .panel{transition:box-shadow .15s,border-color .15s}
+body [class*="bg-[#1a1a1a]"]:hover,body [class*="bg-[#111]"]:hover,body [class*="bg-[#161616]"]:hover,body [class*="bg-[#222]"]:hover,body .bg-panel:hover,body .panel:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent),0 8px 24px rgba(0,0,0,.25)}
+</style>
+</head>
+<body class="min-h-screen p-2 md:p-6 text-sm theme-red">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter></svg>
+<div class="pagina">
+
+<header class="max-w-[1700px] mx-auto flex flex-col md:flex-row justify-between items-center gap-3 mb-4 border-b border-gray-800 pb-4">
+    <div><span class="kicker">Ordem da Realidade</span><h1 class="mt-3">Painel do Mestre</h1></div>
+    <div class="flex items-center gap-3"><label for="theme-picker" class="title-font text-xs">COR</label><input type="color" id="theme-picker" value="#ef4452" oninput="mudarCor(this.value)" title="Escolher a cor do site"><a href="ficha_personagem.html" class="btn px-4 py-2 font-bold rounded"><i class="fas fa-scroll mr-2"></i>MINHA FICHA</a></div>
+</header>
+
+<div class="max-w-[1700px] mx-auto mb-6 panel p-3 flex flex-col md:flex-row items-center gap-3">
+    <label class="tf text-lg text-gray-400">USUÁRIO:</label>
+    <input id="user-name" class="inp flex-grow w-full text-lg font-bold" placeholder="Digite seu nome para entrar" onkeydown="if(event.key==='Enter')entrar()">
+    <button class="btn px-4 py-2 rounded whitespace-nowrap" onclick="entrar()"><i class="fas fa-right-to-bracket mr-2"></i>ENTRAR</button>
+    <button class="btn px-4 py-2 rounded whitespace-nowrap" onclick="carregar()"><i class="fas fa-rotate mr-2"></i>ATUALIZAR</button>
+    <span id="status" class="text-xs text-gray-400"></span><span id="live" class="text-xs"></span>
+</div>
+
+<main id="conteudo" class="max-w-[1700px] mx-auto pb-12"></main>
+
+<div id="modal" onclick="if(event.target===this)fecharModal()" class="fixed inset-0 bg-black/80 z-50 hidden justify-center items-start overflow-y-auto p-4">
+    <div class="panel w-full max-w-4xl p-5 relative my-6" style="border:2px solid var(--accent)">
+        <button onclick="fecharModal()" class="absolute top-2 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+</div>
+
+<script>
+// --- CONFIG ---
+const NOME_MESTRE = 'trickchefemestre';
+const supabaseUrlBruta = 'https://utltpfihutfvmpwzyltr.supabase.co';
+const supabaseKey = 'sb_publishable_-22W7RP6TjUS1NPEGpEYwg_1xcq5TOf';
+const supabaseUrl = supabaseUrlBruta.trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+let db = null;
+try { db = supabase.createClient(supabaseUrl, supabaseKey.trim()); } catch (e) { console.error(e); }
+
+const STATUS = {
+    nao_iniciada: { label: 'Não Iniciada', cor: '#eab308' },
+    em_andamento: { label: 'Em Andamento', cor: '#16a34a' },
+    em_pausa:     { label: 'Em Pausa',     cor: '#f97316' },
+    terminada:    { label: 'Terminada',    cor: '#dc2626' }
+};
+const ATTR_LBL = { forca: 'FOR', intelecto: 'INT', presenca: 'PRE', agilidade: 'AGI' };
+const ATTRS = [['forca','FOR'],['intelecto','INT'],['presenca','PRE'],['agilidade','AGI']];
+const PERICIAS = [['acrobacia','Acrobacia','AGI'],['adestramento','Adestramento','PRE'],['artes','Artes','PRE'],['atletismo','Atletismo','FOR'],['atualidades','Atualidades','INT'],['ciencias','Ciências','INT'],['crime','Crime','AGI'],['diplomacia','Diplomacia','PRE'],['enganacao','Enganação','PRE'],['fortitude','Fortitude','FOR'],['furtividade','Furtividade','AGI'],['iniciativa','Iniciativa','AGI'],['intimidacao','Intimidação','PRE'],['intuicao','Intuição','PRE'],['investigacao','Investigação','INT'],['luta','Luta','FOR'],['medicina','Medicina','INT'],['ocultismo','Ocultismo','INT'],['percepcao','Percepção','PRE'],['pilotagem','Pilotagem','AGI'],['pontaria','Pontaria','AGI'],['profissao','Profissão','INT'],['reflexos','Reflexos','AGI'],['religiao','Religião','PRE'],['sobrevivencia','Sobrevivência','INT'],['taticas','Táticas','INT'],['tecnologia','Tecnologia','INT'],['vontade','Vontade','PRE']];
+
+let usuario = null, ehMestre = false, campanhas = [], fichas = [], timer = null;
+let ultimoRolId = 0, ultAtualizado = null, timer2 = null, sondando = false;
+let ultimaRolagem = {}, canal = null, fichaAberta = null, renderPendente = false, tp = null;
+
+// --- HELPERS ---
+const ELEMENTOS = {
+    sangue: { n: 'Sangue', c: '#dc2626', t: '#fff' },
+    morte: { n: 'Morte', c: '#000', t: '#fff', b: '#fff' },
+    energia: { n: 'Energia', c: '#9333ea', t: '#fff' },
+    conhecimento: { n: 'Conhecimento', c: '#eab308', t: '#fff' },
+    medo: { n: 'Medo', c: '#fff', t: '#000' },
+    contemplacao: { n: 'Contemplação', c: '#b8530f', t: '#fff' }
+};
+const fmt = n => Math.round((Number(n) || 0) * 100) / 100;
+const tituloEl = (nome, e) => `<span class="tf font-bold" style="${!e ? '' : e.b ? 'color:#fff' : 'color:' + e.c}">${esc(nome) || '(sem nome)'}</span>`;
+const tagEl = e => e ? `<span class="tf text-[10px] font-bold px-2 rounded uppercase" style="background:${e.c};color:${e.t};${e.b ? 'border:1px solid ' + e.b + ';' : ''}text-shadow:0 1px 1px rgba(0,0,0,.6)">${e.n}</span>` : '';
+const chip = t => `<span class="tf text-[10px] px-1 rounded bg-[#333] text-gray-300">${t}</span>`;
+const desc = t => t ? `<p class="text-xs text-gray-400 mt-1 whitespace-pre-wrap">${esc(t)}</p>` : '';
+const bloco = (e, cab, corpo) => `<div class="bg-[#161616] rounded p-2 mb-2 border border-gray-800" style="border-left:3px solid ${e ? (e.b || e.c) : '#555'}"><div class="flex items-center flex-wrap gap-2">${cab}</div>${corpo}</div>`;
+const titSec = t => `<h4 class="tf text-lg mt-4 mb-2 border-b border-gray-700">${t}</h4>`;
+const vazio = '<p class="text-gray-500">—</p>';
+
+function secPoderes(t, arr) {
+    return titSec(t) + ((arr || []).map(p => {
+        const o = typeof p === 'string' ? { nome: p } : p, e = ELEMENTOS[o.elemento];
+        return bloco(e, tituloEl(o.nome, e) + tagEl(e), desc(o.descricao));
+    }).join('') || vazio);
+}
+
+function secRituais(arr) {
+    return titSec('RITUAIS') + ((arr || []).map(r => {
+        const e = ELEMENTOS[r.elemento];
+        const campos = [['Alcance', r.alcance], ['Execução', r.execucao], ['Duração', r.duracao], ['Alvo', r.alvo], ['Efeito', r.efeito], ['Área', r.area], ['Resistência', r.resistencia]]
+            .filter(([, v]) => v).map(([k, v]) => `<div><span class="text-gray-500">${k}:</span> ${esc(v)}</div>`).join('');
+        return bloco(e, tituloEl(r.nome, e) + chip((r.circulo || 1) + 'º') + tagEl(e), `<div class="text-xs mt-1 grid grid-cols-2 gap-x-4">${campos}</div>` + desc(r.descricao));
+    }).join('') || vazio);
+}
+
+function secInventario(f) {
+    const itens = (f.itens || []).map(x => typeof x === 'string' ? { nome: x } : x);
+    const total = itens.reduce((t, i) => t + (Number(i.peso) || 0) * (i.qtd ?? 1), 0);
+    const max = Number(f.peso_max) || 0;
+    const cor = max > 0 && total > max ? '#ff7a85' : '#e5e5e5';
+    return titSec('INVENTÁRIO') + `<div class="tf mb-2">PESO: <b style="color:${cor}">${fmt(total)}</b> / ${fmt(max)}</div>` +
+        (itens.map(i => bloco(null, tituloEl(i.nome), `<div class="text-xs text-gray-500 mt-1">Categoria ${esc(i.categoria || 'I')} · Qtd ${fmt(i.qtd ?? 1)} · Peso ${fmt(i.peso)}</div>` + desc(i.descricao))).join('') || vazio);
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = t => (t || '').trim().toLowerCase();
+function setCookie(n, v, d = 365) { document.cookie = `${n}=${encodeURIComponent(v)}; max-age=${d * 86400}; path=/; SameSite=Lax`; }
+function getCookie(n) { const i = document.cookie.split('; ').find(c => c.startsWith(n + '=')); return i ? decodeURIComponent(i.split('=').slice(1).join('=')) : null; }
+function setStatus(msg, tipo = 'info') {
+    const cores = { info: 'text-gray-400', ok: 'text-green-500', erro: 'text-red-500' };
+    $('status').textContent = msg;
+    $('status').className = 'text-xs ' + cores[tipo];
+}
+function abrirModal(h) { $('modal-body').innerHTML = h; $('modal').classList.remove('hidden'); $('modal').classList.add('flex'); }
+function fecharModal() { fichaAberta = null; $('modal').classList.add('hidden'); $('modal').classList.remove('flex'); }
+const modalAberto = () => !$('modal').classList.contains('hidden');
+const msg = t => { $('conteudo').innerHTML = `<p class="text-gray-400 text-center text-lg mt-10">${t}</p>`; };
+
+const barra = (l, a, m, cor) => {
+    const p = m > 0 ? Math.max(0, Math.min(100, a / m * 100)) : 0;
+    return `<div class="mb-2"><div class="flex justify-between tf"><span style="color:${cor}">${l}</span><span>${a} / ${m}</span></div><div class="h-2 bg-[#333] rounded"><div class="h-2 rounded" style="width:${p}%;background:${cor}"></div></div></div>`;
+};
+const badge = c => { const s = STATUS[c.status] || STATUS.nao_iniciada; return `<span class="tf font-bold px-3 py-1 rounded" style="color:${s.cor};border:1px solid ${s.cor}">${s.label}</span>`; };
+
+// --- LOGIN / CARREGAMENTO ---
+function entrar() {
+    const u = norm($('user-name').value);
+    if (!u) return setStatus('Digite um nome de usuário.', 'erro');
+    usuario = u;
+    setCookie('usuario', u);
+    iniciar();
+}
+
+function iniciar() {
+    ehMestre = usuario === NOME_MESTRE;
+    clearInterval(timer);
+    carregar();
+    assinar();
+    // Sondagem rápida: garante atualização mesmo se o Realtime não estiver entregando eventos
+    clearInterval(timer2);
+    timer2 = setInterval(() => {
+        if (ehMestre) sondar();
+        else if (document.activeElement.tagName !== 'SELECT') carregar(true);
+    }, ehMestre ? 2000 : 5000);
+    timer = setInterval(() => {
+        if (modalAberto() || document.activeElement.tagName === 'SELECT') return;
+        carregar(true);
+    }, 30000); // fallback; o tempo real vem do Realtime
+}
+
+async function carregar(silencioso) {
+    if (!db) return setStatus('Supabase não configurado.', 'erro');
+    if (!usuario) return;
+    if (!silencioso) setStatus('Carregando...');
+    try {
+        if (ehMestre) await carregarMestre(); else await carregarJogador();
+        setStatus((ehMestre ? 'Modo mestre · ' : '') + 'atualizado às ' + new Date().toLocaleTimeString('pt-BR'), 'ok');
+    } catch (e) {
+        console.error(e);
+        setStatus('Erro: ' + e.message, 'erro');
+    }
+}
+
+// --- JOGADOR: só vê PV/PD dos aliados da própria campanha ---
+async function carregarJogador() {
+    const { data: eu, error } = await db.from('personagens').select('usuario,nome,campanha_id').eq('usuario', usuario).maybeSingle();
+    if (error) throw error;
+    if (!eu) return msg('Você ainda não tem personagem. Crie na sua ficha.');
+    if (!eu.campanha_id) return msg('Seu personagem ainda não faz parte de nenhuma campanha.');
+
+    const [c, a] = await Promise.all([
+        db.from('campanhas').select('id,nome,status').eq('id', eu.campanha_id).maybeSingle(),
+        db.from('personagens').select('usuario,nome,pv_atual,pv_max,pd_atual,pd_max').eq('campanha_id', eu.campanha_id).order('nome')
+    ]);
+    if (c.error) throw c.error;
+    if (a.error) throw a.error;
+    if (!c.data) return msg('Campanha não encontrada.');
+
+    $('conteudo').innerHTML = `
+        <div class="panel p-4 mb-6 flex flex-wrap items-center gap-3" style="border-left:4px solid ${(STATUS[c.data.status] || STATUS.nao_iniciada).cor}">
+            <h2 class="tf text-2xl flex-grow">${esc(c.data.nome)}</h2>${badge(c.data)}
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        ${a.data.map(f => `<div class="panel p-3" ${f.usuario === usuario ? 'style="border-color:var(--accent)"' : ''}>
+            <div class="tf text-xl font-bold truncate mb-2">${esc(f.nome)} ${f.usuario === usuario ? '<span class="text-xs text-gray-500">(você)</span>' : ''}</div>
+            ${barra('PV', f.pv_atual, f.pv_max, '#ff7a85')}${barra('PD', f.pd_atual, f.pd_max, '#3b82f6')}
+        </div>`).join('')}
+        </div>`;
+}
+
+// --- MESTRE ---
+async function carregarMestre() {
+    const [c, f, r] = await Promise.all([
+        db.from('campanhas').select('*').order('criado_em'),
+        db.from('personagens').select('*').order('nome'),
+        db.from('rolagens').select('*').order('criado_em', { ascending: false }).limit(300)
+    ]);
+    if (c.error) throw c.error;
+    if (f.error) throw f.error;
+    campanhas = c.data; fichas = f.data;
+    ultAtualizado = fichas.reduce((m, x) => (!m || Date.parse(x.atualizado_em) > Date.parse(m)) ? x.atualizado_em : m, null);
+    if (r.data && r.data[0]) ultimoRolId = Math.max(ultimoRolId, r.data[0].id);
+    ultimaRolagem = {};
+    (r.data || []).forEach(x => { if (!ultimaRolagem[x.usuario]) ultimaRolagem[x.usuario] = x; });
+    fichas.forEach(x => { const h = (x.historico_rolagens || []).slice(-1)[0]; if (h && !ultimaRolagem[x.usuario]) ultimaRolagem[x.usuario] = h; });
+    atualizarTela();
+}
+
+function renderMestre() {
+    const livres = fichas.filter(x => !x.campanha_id);
+    $('conteudo').innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="tf text-2xl">CAMPANHAS</h2>
+            <button class="btn px-4 py-2 rounded font-bold" onclick="abrirNovaCampanha()"><i class="fas fa-plus mr-2"></i>NOVA CAMPANHA</button>
+        </div>
+        ${campanhas.map(cardCampanha).join('') || '<p class="text-gray-500 mb-6">Nenhuma campanha criada.</p>'}
+        <h2 class="tf text-2xl mt-8 mb-4">FICHAS SEM CAMPANHA (${livres.length})</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${livres.map(x => cardFicha(x)).join('') || '<p class="text-gray-500">Nenhuma.</p>'}</div>`;
+}
+
+// --- TEMPO REAL ---
+function atualizarTela() {
+    if (document.activeElement && document.activeElement.tagName === 'SELECT') { renderPendente = true; return; }
+    renderMestre();
+    if (fichaAberta && modalAberto()) $('modal-body').innerHTML = htmlFicha(fichaAberta);
+}
+document.addEventListener('focusout', () => setTimeout(() => {
+    if (renderPendente && document.activeElement.tagName !== 'SELECT') { renderPendente = false; atualizarTela(); }
+}, 200));
+
+const setLive = ok => { $('live').innerHTML = ok ? '<span class="text-green-500 ml-2">● AO VIVO</span>' : '<span class="text-yellow-500 ml-2">◐ atualizando a cada 2s</span>'; };
+const mesclar = (lista, chave, novo) => { const i = lista.findIndex(x => x[chave] === novo[chave]); if (i >= 0) Object.assign(lista[i], novo); else lista.push(novo); };
+
+function assinar() {
+    if (!db) return;
+    if (canal) { db.removeChannel(canal); canal = null; }
+    let c = db.channel('painel-' + Date.now())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'personagens' }, onFicha)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'campanhas' }, onCampanha);
+    if (ehMestre) c = c.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rolagens' }, onRolagem);
+    canal = c.subscribe((st, err) => { setLive(st === 'SUBSCRIBED'); if (st !== 'SUBSCRIBED') console.warn('Realtime:', st, err); });
+}
+
+function onFicha(p) {
+    if (!ehMestre) { clearTimeout(tp); tp = setTimeout(() => carregar(true), 300); return; }
+    if (p.eventType === 'DELETE') fichas = fichas.filter(f => f.usuario !== p.old.usuario);
+    else if (!aplicarFicha(p.new)) return;
+    atualizarTela();
+}
+
+function onCampanha(p) {
+    if (!ehMestre) { clearTimeout(tp); tp = setTimeout(() => carregar(true), 300); return; }
+    if (p.eventType === 'DELETE') campanhas = campanhas.filter(c => c.id !== p.old.id);
+    else mesclar(campanhas, 'id', p.new);
+    atualizarTela();
+}
+
+function mostrarRolagem(r) {
+    ultimaRolagem[r.usuario] = r;
+    document.querySelectorAll('[data-roll]').forEach(el => {
+        if (el.dataset.roll !== r.usuario) return;
+        el.innerHTML = conteudoRolagem(r);
+        el.classList.remove('roll-pop'); void el.offsetWidth; el.classList.add('roll-pop');
+    });
+}
+
+function novaRolagemDB(r) {
+    if (r.id <= ultimoRolId) return;
+    ultimoRolId = r.id;
+    mostrarRolagem(r);
+}
+
+function onRolagem(p) { novaRolagemDB(p.new); }
+
+// Aplica uma ficha vinda do banco (Realtime ou sondagem). Retorna true se algo mudou.
+function aplicarFicha(x) {
+    const ex = fichas.find(f => f.usuario === x.usuario);
+    if (ex && x.atualizado_em && ex.atualizado_em === x.atualizado_em) return false;
+    mesclar(fichas, 'usuario', x);
+    fichas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+    // Se a tabela de rolagens não estiver disponível, usa o histórico salvo na ficha
+    const h = (x.historico_rolagens || []).slice(-1)[0], u = ultimaRolagem[x.usuario];
+    if (h && (!u || (Date.parse(h.data) > Date.parse(u.data || u.criado_em) && (u.nome !== h.nome || u.formula !== h.formula || u.total !== h.total))))
+        mostrarRolagem({ ...h, usuario: x.usuario });
+    if (x.atualizado_em && (!ultAtualizado || Date.parse(x.atualizado_em) > Date.parse(ultAtualizado))) ultAtualizado = x.atualizado_em;
+    return true;
+}
+
+async function sondar() {
+    if (sondando || !db || !usuario) return;
+    sondando = true;
+    try {
+        let qf = db.from('personagens').select('*');
+        if (ultAtualizado) qf = qf.gte('atualizado_em', ultAtualizado);
+        const [f, c, r] = await Promise.all([qf, db.from('campanhas').select('*').order('criado_em'), db.from('rolagens').select('*').gt('id', ultimoRolId).order('id')]);
+        let mudou = false;
+        if (!f.error) (f.data || []).forEach(x => { if (aplicarFicha(x)) mudou = true; });
+        if (!c.error && JSON.stringify(c.data) !== JSON.stringify(campanhas)) { campanhas = c.data; mudou = true; }
+        if (!r.error) (r.data || []).forEach(novaRolagemDB);
+        if (mudou) atualizarTela();
+    } catch (e) { console.error(e); }
+    sondando = false;
+}
+
+const conteudoRolagem = r => r
+    ? `<span class="text-xs text-gray-400 truncate pr-2">${esc(r.nome)} <span class="text-gray-600">(${esc(r.formula)})</span></span><span class="flex flex-col items-end"><span class="roll-num ${r.detalhes && r.detalhes.critico ? 'crit-num' : ''} tf text-3xl font-bold" style="color:var(--accent)">${esc(r.total)}</span>${r.detalhes && r.detalhes.critico ? '<span class="tf text-[10px] font-bold tracking-widest" style="color:var(--accent)">CRÍTICO!</span>' : ''}</span>`
+    : '<span class="text-xs text-gray-600">Sem rolagens</span>';
+const rolagemBox = f => `<div data-roll="${esc(f.usuario)}" class="flex justify-between items-center bg-[#111] rounded p-2 my-2 min-h-[48px]">${conteudoRolagem(ultimaRolagem[f.usuario])}</div>`;
+
+function cardCampanha(c) {
+    const membros = fichas.filter(f => f.campanha_id === c.id);
+    const s = STATUS[c.status] || STATUS.nao_iniciada;
+    return `<div class="panel p-4 mb-6" style="border-left:4px solid ${s.cor}">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+            <h3 class="tf text-2xl flex-grow">${esc(c.nome)} <span class="text-sm text-gray-500">(${membros.length})</span></h3>
+            <select onchange="mudarStatus('${c.id}', this.value)" class="tf font-bold px-2 py-1 rounded bg-[#111]" style="color:${s.cor};border:1px solid ${s.cor}">
+                ${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === c.status ? 'selected' : ''} style="color:${v.cor}">${v.label}</option>`).join('')}
+            </select>
+            <button class="btn px-3 py-1 rounded" onclick="abrirAdicionar('${c.id}')"><i class="fas fa-user-plus mr-1"></i>FICHAS</button>
+            <button class="btn px-3 py-1 rounded" onclick="apagarCampanha('${c.id}')"><i class="fas fa-trash mr-1"></i>APAGAR</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${membros.map(f => cardFicha(f, true)).join('') || '<p class="text-gray-500">Sem fichas.</p>'}</div>
+    </div>`;
+}
+
+function cardFicha(f, naCampanha) {
+    const a = f.atributos || {}, i = f.info || {};
+    return `<div class="panel p-3">
+        <div class="tf text-xl font-bold truncate">${esc(f.nome)}</div>
+        <div class="text-xs text-gray-500 mb-2">@${esc(f.usuario)} · NÍVEL ${esc(f.nivel ?? '-')} · NEX ${esc(f.nex ?? 0)}%</div>
+        ${barra('PV', f.pv_atual, f.pv_max, '#ff7a85')}${barra('PD', f.pd_atual, f.pd_max, '#3b82f6')}
+        <div class="grid grid-cols-4 gap-1 text-center my-2">${ATTRS.map(([k, l]) => `<div class="bg-[#111] rounded p-1"><div class="text-[10px] text-gray-500">${l}</div><div class="tf">${esc(a[k] || '-')}</div></div>`).join('')}</div>
+        ${rolagemBox(f)}
+        <div class="text-xs text-gray-400 mb-2">DEFESA: <b class="text-white">${esc(i.defesa || '-')}</b> · DT RITUAIS: <b class="text-white">${esc(i.dt || '-')}</b> · PD/TURNO: <b class="text-white">${esc(f.pd_turno ?? '-')}</b></div>
+        <div class="flex gap-2">
+            <button class="btn px-2 py-1 rounded text-xs flex-grow" data-u="${esc(f.usuario)}" onclick="abrirFicha(this.dataset.u)">ABRIR FICHA</button>
+            ${naCampanha ? `<button class="btn px-2 py-1 rounded text-xs" data-u="${esc(f.usuario)}" onclick="removerDaCampanha(this.dataset.u)"><i class="fas fa-user-minus"></i> REMOVER</button>` : ''}
+        </div>
+    </div>`;
+}
+
+// --- AÇÕES DO MESTRE ---
+const listaChecks = l => l.length
+    ? `<p class="tf text-gray-400 mb-2">SELECIONE AS FICHAS:</p><div class="max-h-72 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-2">${l.map(f => `<label class="panel p-2 flex items-center gap-2 cursor-pointer"><input type="checkbox" class="chk" value="${esc(f.usuario)}"><span class="tf">${esc(f.nome)}</span><span class="text-xs text-gray-500">@${esc(f.usuario)}</span></label>`).join('')}</div>`
+    : '<p class="text-gray-500">Não há fichas sem campanha.</p>';
+const marcados = () => [...document.querySelectorAll('.chk:checked')].map(c => c.value);
+
+function abrirNovaCampanha() {
+    abrirModal(`<h3 class="tf text-2xl mb-4">NOVA CAMPANHA</h3>
+        <input id="nc-nome" class="inp w-full text-lg mb-4" placeholder="Nome da campanha">
+        ${listaChecks(fichas.filter(f => !f.campanha_id))}
+        <div class="mt-4 text-right"><button class="btn px-5 py-2 rounded font-bold" onclick="criarCampanha()">CRIAR</button></div>`);
+}
+
+async function vincular(id, us) {
+    if (!us.length) return;
+    const { error } = await db.from('personagens').update({ campanha_id: id }).in('usuario', us);
+    if (error) alert('Erro: ' + error.message);
+}
+
+async function criarCampanha() {
+    const nome = $('nc-nome').value.trim();
+    if (!nome) return alert('Dê um nome à campanha.');
+    const { data, error } = await db.from('campanhas').insert({ nome }).select().single();
+    if (error) return alert('Erro: ' + error.message);
+    await vincular(data.id, marcados());
+    fecharModal(); carregar();
+}
+
+function abrirAdicionar(id) {
+    abrirModal(`<h3 class="tf text-2xl mb-4">ADICIONAR FICHAS</h3>${listaChecks(fichas.filter(f => !f.campanha_id))}
+        <div class="mt-4 text-right"><button class="btn px-5 py-2 rounded font-bold" onclick="adicionarFichas('${id}')">ADICIONAR</button></div>`);
+}
+
+async function adicionarFichas(id) { await vincular(id, marcados()); fecharModal(); carregar(); }
+
+async function removerDaCampanha(u) {
+    const { error } = await db.from('personagens').update({ campanha_id: null }).eq('usuario', u);
+    if (error) return alert('Erro: ' + error.message);
+    carregar();
+}
+
+async function apagarCampanha(id) {
+    if (!confirm('Apagar esta campanha? As fichas continuam existindo, só ficam sem campanha.')) return;
+    const { error } = await db.from('campanhas').delete().eq('id', id);
+    if (error) return alert('Erro: ' + error.message);
+    carregar();
+}
+
+async function mudarStatus(id, s) {
+    const { error } = await db.from('campanhas').update({ status: s }).eq('id', id);
+    if (error) return alert('Erro: ' + error.message);
+    carregar(true);
+}
+
+// --- FICHA DETALHADA (somente leitura) ---
+function abrirFicha(u) { fichaAberta = u; abrirModal(htmlFicha(u)); }
+
+function htmlFicha(u) {
+    const f = fichas.find(x => x.usuario === u);
+    if (!f) return '<p class="text-gray-500">Ficha não encontrada.</p>';
+    const a = f.atributos || {}, i = f.info || {}, p = f.pericias || {}, bp = f.bonus_pericias || {};
+    const camp = campanhas.find(c => c.id === f.campanha_id);
+    const lista = (t, arr, cor) => `<h4 class="tf text-lg mt-4 mb-1 border-b border-gray-700" ${cor ? `style="color:${cor}"` : ''}>${t}</h4>${(arr || []).length ? `<ul class="list-disc pl-5">${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="text-gray-500">—</p>'}`;
+    const rolls = (f.rolagens_personalizadas || []).map(r => `${r.name ?? r.nome ?? ''} (${r.formula})`);
+    const hist = (f.historico_rolagens || []).slice().reverse();
+
+    return (`
+        <h3 class="tf text-3xl font-bold">${esc(f.nome)}</h3>
+        <div class="text-xs text-gray-500 mb-3">@${esc(f.usuario)} · Campanha: ${camp ? esc(camp.nome) : 'nenhuma'} · NÍVEL ${esc(f.nivel ?? '-')} · NEX ${esc(f.nex ?? 0)}%</div>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div>${barra('PV', f.pv_atual, f.pv_max, '#ff7a85')}${barra('PD', f.pd_atual, f.pd_max, '#3b82f6')}</div>
+            <div class="text-sm leading-relaxed">DEFESA: <b>${esc(i.defesa || '-')}</b> · PD/TURNO: <b>${esc(f.pd_turno ?? '-')}</b><br>DT RITUAIS: <b>${esc(i.dt || '-')}</b><br>TRILHA: <b class="uppercase">${esc(i.trilha || '-')}</b><br>OCUPAÇÃO: <b class="uppercase">${esc(i.ocupacao || '-')}</b><br>RESISTÊNCIAS: <b>${esc(f.resistencias || '-')}</b><br>PROFICIÊNCIAS: <b>${esc(f.proficiencias || '-')}</b></div>
+        </div>
+        <h4 class="tf text-lg mt-4 mb-1 border-b border-gray-700">ATRIBUTOS</h4>
+        <div class="grid grid-cols-4 gap-2 text-center">${ATTRS.map(([k, l]) => `<div class="bg-[#111] rounded p-2"><div class="text-xs text-gray-500">${l}</div><div class="tf text-xl">${esc(a[k] || '-')}</div></div>`).join('')}</div>
+        <h4 class="tf text-lg mt-4 mb-1 border-b border-gray-700">PERÍCIAS</h4>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">${PERICIAS.map(([id, n, l]) => `<div class="flex justify-between"><span><span class="text-[10px] text-gray-500">${ATTR_LBL[(i.skillAttr || {})[id]] || l}</span> ${n}</span><b class="tf">${esc(p[id] || '1d4')}${bp[id] ? ` <span style="color:var(--accent)">${esc(/^[+-]/.test(bp[id]) ? bp[id] : '+' + bp[id])}</span>` : ''}</b></div>`).join('')}</div>
+        ${secPoderes('PODERES', f.poderes)}
+        ${secPoderes('PODERES PARANORMAIS', f.poderes_paranormais)}
+        ${secRituais(f.rituais)}
+        ${secInventario(f)}
+        ${lista('ROLAGENS PERSONALIZADAS', rolls)}
+        <h4 class="tf text-lg mt-4 mb-1 border-b border-gray-700">HISTÓRICO DE ROLAGENS</h4>
+        <div class="max-h-60 overflow-y-auto">${hist.map(r => `<div class="flex justify-between border-b border-gray-800 py-1 text-xs"><span class="text-gray-500">${esc(new Date(r.data).toLocaleString('pt-BR'))}</span><span class="flex-grow px-2">${esc(r.nome)} <span class="text-gray-500">(${esc(r.formula)})</span>${r.detalhes && r.detalhes.critico ? ' <b class="tf" style="color:var(--accent)">CRÍTICO!</b>' : ''}</span><b class="tf text-base">${esc(r.total)}</b></div>`).join('') || '<p class="text-gray-500">—</p>'}</div>`);
+}
+
+function applyColor(t){const m={red:'#ef4452',blue:'#3b82f6',green:'#22c55e'};const h=m[t]||(/^#[0-9a-f]{6}$/i.test(t||'')?t:m.red);const s=document.body.style;s.setProperty('--accent',h);s.setProperty('--acc-t','color-mix(in srgb,'+h+' 55%,white)');s.setProperty('--glow','color-mix(in srgb,'+h+' 16%,transparent)');const p=document.getElementById('theme-picker');if(p)p.value=h}
+function mudarCor(v){applyColor(v);setCookie('tema',v)}
+// --- BOOTSTRAP ---
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && modalAberto()) fecharModal(); });
+window.onload = () => {
+    const t = getCookie('tema');
+    if (t) applyColor(t);
+    const u = getCookie('usuario');
+    if (u) { usuario = u; $('user-name').value = u; iniciar(); }
+    else setStatus('Digite seu nome e clique em ENTRAR.');
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minhas fichas | Ordem Paranormal RPG</title>
+  <link rel="icon" href="assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <!-- style.css fornece variáveis, fontes, campos, ícones e fragmentos; fichas.css só acrescenta esta tela -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/fichas.css">
+</head>
+<body class="page-fichas">
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/></symbol>
+      <symbol id="i-agent" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="fog" id="fog" aria-hidden="true"></div>
+
+  <main class="vault">
+    <header class="vault__head">
+      <h1 id="userName">Usuário</h1>
+      <p>Escolha uma ficha para abrir.</p>
+    </header>
+
+    <label class="field search">
+      <span class="sr-only">Pesquisar ficha</span>
+      <div class="control">
+        <svg class="ico"><use href="#i-search"/></svg>
+        <input type="search" id="search" placeholder="Pesquisar pelo nome do personagem" autocomplete="off">
+      </div>
+    </label>
+
+    <p class="count" id="count" role="status" aria-live="polite"></p>
+
+    <section class="roster" id="roster" aria-label="Suas fichas"></section>
+    <p class="empty" id="empty" hidden>Nenhuma ficha encontrada. Tente outro nome.</p>
+  </main>
+
+  <script src="js/fichas.js"></script>
+</body>
+</html>

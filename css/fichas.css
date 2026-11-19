@@ -1,0 +1,126 @@
+/* Tela de seleção de fichas. Usa as variáveis e componentes de style.css */
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.page-fichas {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(48, 98, 148, .30), transparent 62%),
+    linear-gradient(rgba(4, 8, 14, .9), rgba(4, 8, 14, .96)),
+    var(--imagem) center / cover fixed no-repeat;
+}
+
+/* cartão principal, mesma moldura do login */
+.vault {
+  position: relative; z-index: 1;
+  width: min(100% - 32px, 1040px); margin: 32px auto;
+  padding: 44px 48px 48px; min-height: calc(100vh - 64px);
+  border: 1px solid transparent; border-radius: 10px;
+  background:
+    linear-gradient(var(--panel), var(--panel)) padding-box,
+    linear-gradient(140deg, var(--blue-hi), #14283c 38%, #14283c 62%, var(--blue)) border-box;
+  box-shadow: 0 0 90px rgba(63, 120, 176, .22), 0 30px 80px rgba(0, 0, 0, .7);
+  animation: vaultIn .8s ease both;
+}
+@keyframes vaultIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+.vault::before, .vault::after { /* cantoneiras */
+  content: ""; position: absolute; width: 26px; height: 26px; border: 2px solid var(--blue-hi);
+  filter: drop-shadow(0 0 6px rgba(106, 166, 224, .7)); pointer-events: none;
+}
+.vault::before { top: -7px; left: -7px; border-right: 0; border-bottom: 0; border-top-left-radius: 6px; }
+.vault::after  { bottom: -7px; right: -7px; border-left: 0; border-top: 0; border-bottom-right-radius: 6px; }
+
+/* nome do usuário, acima de tudo */
+.vault__head { text-align: center; margin-bottom: 30px; }
+.vault__head h1 {
+  font: 700 clamp(2rem, 5vw, 3rem)/1.1 "Cinzel", serif;
+  text-shadow: 0 0 30px rgba(106, 166, 224, .55);
+  overflow-wrap: anywhere;
+}
+.vault__head h1::after {
+  content: ""; display: block; width: 90px; height: 2px; margin: 16px auto 0;
+  background: linear-gradient(90deg, transparent, var(--blue-hi), transparent); box-shadow: 0 0 12px var(--blue-hi);
+}
+.vault__head p { color: var(--steel); margin-top: 14px; }
+
+/* pesquisa */
+.search { max-width: 520px; margin: 0 auto; }
+.count { min-height: 22px; margin: 14px 0 22px; text-align: center; font-size: .9rem; color: var(--steel); }
+
+/* lista de fichas */
+.roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 22px; }
+
+.sheet {
+  position: relative; display: flex; flex-direction: column; gap: 16px;
+  padding: 16px 16px 20px; border-radius: 10px; text-align: left; cursor: pointer;
+  color: inherit; font: inherit;
+  background: linear-gradient(180deg, rgba(10, 24, 40, .85), rgba(5, 12, 20, .92));
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .45);
+  transition: border-color .3s, box-shadow .3s, transform .3s;
+}
+.sheet::before { /* linha de luz no topo */
+  content: ""; position: absolute; top: -1px; left: 14%; right: 14%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue-hi), transparent);
+  opacity: .5; transition: opacity .3s, left .3s, right .3s;
+}
+.sheet:hover, .sheet:focus-visible {
+  transform: translateY(-6px); border-color: var(--blue);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, .6), 0 0 36px rgba(63, 120, 176, .3);
+}
+.sheet:hover::before, .sheet:focus-visible::before { opacity: 1; left: 0; right: 0; }
+.sheet:focus-visible { outline: 2px solid var(--blue-hi); outline-offset: 3px; }
+
+.sheet__portrait {
+  aspect-ratio: 4 / 5; border-radius: 6px; overflow: hidden;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  background: radial-gradient(circle at 50% 35%, rgba(63, 120, 176, .3), rgba(2, 6, 11, .9) 75%);
+}
+.sheet__portrait img { width: 100%; height: 100%; object-fit: cover; }
+.sheet__portrait svg {
+  width: 46%; height: auto; fill: none; stroke: var(--steel); stroke-width: 1.2;
+  stroke-linecap: round; stroke-linejoin: round; opacity: .7;
+  filter: drop-shadow(0 0 8px rgba(106, 166, 224, .5));
+}
+
+.sheet__name {
+  font: 700 1.3rem/1.2 "Cinzel", serif; text-shadow: 0 0 18px rgba(106, 166, 224, .4);
+  overflow-wrap: anywhere;
+}
+
+.sheet__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sheet__stats div {
+  padding: 8px 12px; border-radius: 6px;
+  background: rgba(2, 6, 11, .75); border: 1px solid var(--line);
+}
+.sheet__stats dt {
+  font: 600 .7rem "Source Sans 3", sans-serif; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--blue-hi); margin-bottom: 2px;
+}
+.sheet__stats dd { font: 700 1.2rem "Cinzel", serif; color: #fff; }
+
+.empty { text-align: center; color: var(--steel); padding: 40px 0; }
+.empty[hidden] { display: none; }
+
+@media (max-width: 860px) {
+  .vault { margin: 16px auto; padding: 32px 20px 32px; min-height: calc(100vh - 32px); }
+  .roster { gap: 16px; }
+}
+@media (max-width: 480px) {
+  .roster { grid-template-columns: 1fr; }
+  .sheet { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .sheet__portrait { width: 96px; aspect-ratio: 1; flex: none; }
+  .sheet__name { flex: 1; min-width: 0; }
+  .sheet__stats { flex-basis: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vault { animation: none; }
+  .sheet { transition: none; }
+  .sheet:hover, .sheet:focus-visible { transform: none; }
+}

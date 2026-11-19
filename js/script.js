@@ -175,7 +175,7 @@ forms.login.addEventListener('submit', (e) => {
   const data = Object.fromEntries(new FormData(forms.login));
   // TODO: enviar `data` ao seu servidor (fetch/axios)
   console.log('login', data);
-  setMessage('Login enviado. Conecte ao seu back-end.');
+  location.href = 'fichas.html';
 });
 
 forms.signup.addEventListener('submit', (e) => {
